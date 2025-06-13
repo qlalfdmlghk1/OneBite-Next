@@ -1,13 +1,26 @@
 import SearchableLayout from "@/components/searchable-layout";
-import { useRouter } from "next/router";
 import { ReactNode } from "react";
+import BookItem from "@/components/book-item";
+import { GetServerSidePropsContext, InferGetServerSidePropsType } from "next";
+import fetchBooks from "@/lib/fetch-books";
 
-export default function Page() {
-  const router = useRouter();
+export const getServerSideProps = async (context: GetServerSidePropsContext) => {
+  const q = context.query.q;
+  const books = await fetchBooks(q as string);
 
-  const { q } = router.query; // 쿼리 스트링
+  return {
+    props: { books },
+  };
+};
 
-  return <h1>Search {q} </h1>;
+export default function Page({ books }: InferGetServerSidePropsType<typeof getServerSideProps>) {
+  return (
+    <div>
+      {books.map((book) => (
+        <BookItem key={book.id} {...book} />
+      ))}
+    </div>
+  );
 }
 
 Page.getLayout = (page: ReactNode) => {
